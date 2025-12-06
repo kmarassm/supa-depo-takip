@@ -1,1 +1,88 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1'><link rel='manifest' href='./manifest.json'><title>Depo PWA</title></head><body><div id='root'></div><script type='module' src='./src/main.jsx'></script></body></html>
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depo Takip PWA</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Basit stil -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 { color: #333; }
+        .box { padding: 10px; border: 1px solid #ddd; margin-bottom: 10px; }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Depo Takip</h1>
+    <p>Bu sayfa artık çalışıyor! Buradan Supabase bağlantılarını ekleyeceğiz.</p>
+
+    <div class="box">
+        <h3>Ürün Ekle</h3>
+        <input id="urunAdi" placeholder="Malzeme adı">
+        <input id="urunTuru" placeholder="Malzeme türü">
+        <button onclick="urunEkle()">Kaydet</button>
+    </div>
+
+    <div class="box">
+        <h3>Ürün Listesi</h3>
+        <div id="liste"></div>
+    </div>
+
+    <!-- Supabase Bağlantısı -->
+    <script type="module">
+        import { createClient } from "https://esm.sh/@supabase/supabase-js";
+
+        const supabaseUrl = "BURAYA_URL";
+        const supabaseKey = "BURAYA_PUBLIC_KEY";
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        async function urunEkle() {
+            const ad = document.getElementById("urunAdi").value;
+            const tur = document.getElementById("urunTuru").value;
+
+            const { data, error } = await supabase
+                .from("urunler")
+                .insert([{ urun_adi: ad, urun_turu: tur }]);
+
+            if (error) {
+                alert("Hata: " + error.message);
+            } else {
+                alert("Eklendi!");
+                listeGetir();
+            }
+        }
+
+        async function listeGetir() {
+            const { data } = await supabase.from("urunler").select("*");
+            let html = "";
+
+            data.forEach(u => {
+                html += `<div>${u.urun_adi} - ${u.urun_turu}</div>`;
+            });
+
+            document.getElementById("liste").innerHTML = html;
+        }
+
+        listeGetir();
+    </script>
+<script>
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./service-worker.js");
+}
+</script>
+
+</body>
+</html>
